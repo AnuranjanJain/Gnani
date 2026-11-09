@@ -1,0 +1,17 @@
+{
+  "name": "samajh-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Samajh backend: Gnani STT/TTS proxies + local deterministic evaluator (synthetic demo only).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

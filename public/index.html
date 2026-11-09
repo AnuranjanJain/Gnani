@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Samajh — Say it back in your own words</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="coach-header">
+    <div class="coach-header-inner">
+      <div class="coach-brand">
+        <h1>Samajh</h1>
+        <p class="coach-tagline">A voice practice room for workplace safety training.</p>
+      </div>
+      <div class="coach-switch">
+        <p class="viewing-label" id="viewing-label">Viewing: Trainee</p>
+        <nav class="view-tabs" aria-label="Choose view">
+          <button type="button" class="tab" id="btn-trainee" aria-pressed="true">Trainee</button>
+          <button type="button" class="tab" id="btn-supervisor" aria-pressed="false">Supervisor</button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <p id="health-banner" class="health-card" role="status" aria-live="polite">Checking service status…</p>
+    <p id="resume-banner" class="health-card" role="status" hidden><span id="resume-text"></span> <button type="button" class="btn" id="btn-fresh-session">Start fresh</button></p>
+
+    <!-- ================= TRAINEE VIEW ================= -->
+    <section id="trainee-view" aria-labelledby="trainee-heading">
+      <h2 id="trainee-heading" class="visually-hidden">Trainee practice</h2>
+
+      <ol class="trail" aria-label="Your practice steps">
+        <li id="dot-listen" class="step-dot is-current" data-step="listen" aria-current="step">
+          <span class="dot-num" aria-hidden="true">1</span>
+          <span class="dot-words"><span class="dot-name">Listen</span> <span class="dot-state">Now</span></span>
+        </li>
+        <li id="dot-speak" class="step-dot" data-step="speak">
+          <span class="dot-num" aria-hidden="true">2</span>
+          <span class="dot-words"><span class="dot-name">Speak</span> <span class="dot-state">Next</span></span>
+        </li>
+        <li id="dot-check" class="step-dot" data-step="check">
+          <span class="dot-num" aria-hidden="true">3</span>
+          <span class="dot-words"><span class="dot-name">Check</span> <span class="dot-state">Next</span></span>
+        </li>
+        <li id="dot-followup" class="step-dot" data-step="followup" hidden>
+          <span class="dot-num" aria-hidden="true">4</span>
+          <span class="dot-words"><span class="dot-name">One more</span> <span class="dot-state">Next</span></span>
+        </li>
+      </ol>
+
+      <p class="notice notice-tts" id="signoff-banner" role="status" hidden></p>
+
+      <div id="trainee-done" class="done-panel" role="status" hidden>
+        <p class="done-title">Done — nicely explained.</p>
+        <p class="done-sub">Your answers are with the supervisor now.</p>
+        <p class="done-ticket">Sent to supervisor ✓ · Final decision: supervisor</p>
+      </div>
+
+      <!-- Step 1 · Listen -->
+      <section id="step-listen" class="step-panel" data-step="listen" aria-labelledby="listen-heading">
+        <p class="step-count">Step 1 of 3 · Listen</p>
+        <h3 id="listen-heading" class="step-title" tabindex="-1">Hear the instruction</h3>
+        <p class="step-lead" id="scenario-kicker">Machine cleaning training · practising with Aarav (demo trainee).</p>
+        <p class="step-warm">First, listen to the approved instruction. Replay it as many times as you like — there is no hurry.</p>
+
+        <div class="field field-inline">
+          <label for="scenario-select">Practice scenario</label>
+          <select id="scenario-select">
+            <option value="machine-cleaning">Machine cleaning</option>
+            <option value="ladder-safety">Ladder safety</option>
+            <option value="spill-response">Spill response</option>
+          </select>
+        </div>
+
+        <div class="listen-card">
+          <p class="listen-en" id="instruction-en"></p>
+          <p class="listen-hi" id="instruction-hi" lang="hi"></p>
+          <p class="review-note">The Hindi line is a demo placeholder and needs human review before real training use.</p>
+        </div>
+
+        <div class="field field-inline">
+          <label for="language-select">Spoken language</label>
+          <select id="language-select">
+            <option value="en-IN">English</option>
+            <option value="hi-en">Hindi (Hinglish voice)</option>
+          </select>
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn btn-primary" id="btn-play-instruction">Play instruction</button>
+          <button type="button" class="btn" id="btn-listen-again">Listen again</button>
+        </div>
+        <audio id="instruction-audio" controls aria-label="Spoken instruction audio"></audio>
+        <p class="notice notice-tts" id="tts-notice" role="status" hidden></p>
+
+        <div class="step-nav">
+          <button type="button" class="btn btn-primary btn-next" id="btn-to-speak">I have listened — continue</button>
+        </div>
+      </section>
+
+      <!-- Step 2 · Speak -->
+      <section id="step-speak" class="step-panel" data-step="speak" aria-labelledby="record-heading" hidden>
+        <p class="step-count">Step 2 of 3 · Speak</p>
+        <h3 id="record-heading" class="step-title" tabindex="-1">Say it back <span class="turn-note" id="turn-label">(original answer)</span></h3>
+        <p class="step-warm">Now explain it in your own words — Hindi, English, or both. Take your time; every try is welcome here.</p>
+
+        <div class="booth">
+          <button type="button" class="record-btn" id="btn-record">Record</button>
+          <p class="timer-line"><span class="timer" id="record-timer">0s / 30s</span></p>
+          <p class="state-line"><span class="state-badge is-idle" id="state-label" role="status" aria-live="polite">Idle</span></p>
+        </div>
+        <p class="notice" id="record-hint">Recording stops automatically at 30 seconds. Speak clearly, then press Stop.</p>
+        <p class="notice notice-error" id="record-error" role="alert" hidden></p>
+
+        <div class="step-nav">
+          <button type="button" class="btn" id="btn-back-listen">Back to listening</button>
+          <button type="button" class="btn" id="btn-to-check">Review my words</button>
+        </div>
+      </section>
+
+      <!-- Step 3 · Check -->
+      <section id="step-check" class="step-panel" data-step="check" aria-labelledby="transcript-heading" hidden>
+        <p class="step-count">Step 3 of 3 · Check</p>
+        <h3 id="transcript-heading" class="step-title" tabindex="-1">Check your words</h3>
+        <p class="step-warm">These are the words we heard. If the machine misheard you, fix it below — your correction is what gets reviewed.</p>
+
+        <div class="field">
+          <p class="box-label" id="original-heard-label">What the machine heard (kept as-is)</p>
+          <p class="heard-box" id="original-transcript" aria-live="polite" aria-describedby="original-heard-label"></p>
+        </div>
+        <div class="field">
+          <label class="box-label" for="edited-transcript">Your corrections (this is what gets reviewed)</label>
+          <textarea id="edited-transcript" placeholder="Your transcript will appear here after recording. You can correct it here."></textarea>
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn btn-primary" id="btn-submit-original">Send my answer for review</button>
+        </div>
+        <p class="notice notice-tts" id="submit-notice" role="status" hidden></p>
+
+        <div class="step-nav">
+          <button type="button" class="btn" id="btn-back-speak">Back to speaking</button>
+        </div>
+      </section>
+
+      <!-- Step 4 · Follow-up (appears only when asked) -->
+      <section id="followup-card" class="step-panel" data-step="followup" aria-labelledby="followup-heading" hidden>
+        <p class="step-count">One more question · just for you</p>
+        <h3 id="followup-heading" class="step-title" tabindex="-1">A small follow-up</h3>
+        <p class="step-warm">Something was unclear, so here is one gentle question. Answer it the same way — speak, then check.</p>
+
+        <p class="followup-question" id="followup-question"></p>
+        <div class="button-row">
+          <button type="button" class="btn" id="btn-play-followup">Play follow-up question</button>
+          <button type="button" class="btn btn-primary" id="btn-record-followup">Record follow-up answer</button>
+        </div>
+        <audio id="followup-audio" controls aria-label="Spoken follow-up audio"></audio>
+        <p class="notice notice-tts" id="followup-tts-notice" role="status" hidden></p>
+        <div class="field">
+          <p class="box-label" id="followup-heard-label">What the machine heard (kept as-is)</p>
+          <p class="heard-box" id="followup-original" aria-describedby="followup-heard-label"></p>
+        </div>
+        <div class="field">
+          <label class="box-label" for="followup-edited">Your corrections (this is what gets reviewed)</label>
+          <textarea id="followup-edited" placeholder="Your follow-up transcript will appear here after recording."></textarea>
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn btn-primary" id="btn-submit-followup">Send follow-up answer</button>
+        </div>
+        <p class="notice notice-tts" id="followup-submit-notice" role="status" hidden></p>
+
+        <div class="step-nav">
+          <button type="button" class="btn" id="btn-back-check">Back to my answer</button>
+        </div>
+      </section>
+
+      <section class="stop-bar" aria-labelledby="stop-heading">
+        <h3 id="stop-heading" class="visually-hidden">Need help?</h3>
+        <p class="stop-text">Need a person instead? You can stop at any time — a supervisor will come and help.</p>
+        <button type="button" class="btn btn-stop" id="btn-stop">Stop / Ask for supervisor</button>
+        <p class="notice notice-tts" id="stop-notice" role="status" hidden></p>
+      </section>
+    </section>
+
+    <!-- ================= SUPERVISOR VIEW ================= -->
+    <section id="supervisor-view" class="desk" aria-labelledby="supervisor-heading" hidden>
+      <p class="desk-count">Review desk</p>
+      <h2 id="supervisor-heading" class="desk-title">Supervisor review</h2>
+      <p class="desk-warm">Everything the trainee said is below, exactly as heard. The final decision is always yours.</p>
+
+      <div class="overall-wrap" aria-live="polite">
+        <p class="overall-label">Overall state</p>
+        <p class="overall-banner is-waiting" id="sup-state">Not evaluated yet</p>
+      </div>
+
+      <section class="ledger" aria-labelledby="sup-scenario-heading">
+        <p class="ledger-count" aria-hidden="true">Ledger 01</p>
+        <h3 id="sup-scenario-heading">Approved instruction and required points</h3>
+        <p class="desk-instruction" id="sup-instruction-en"></p>
+        <p class="desk-instruction desk-instruction-hi" id="sup-instruction-hi" lang="hi"></p>
+        <p class="review-note">The Hindi line is a demo placeholder and needs human review.</p>
+        <div class="field field-inline">
+          <label for="sup-scenario-select">Practice scenario (kept in sync with the trainee view)</label>
+          <select id="sup-scenario-select">
+            <option value="machine-cleaning">Machine cleaning</option>
+            <option value="ladder-safety">Ladder safety</option>
+            <option value="spill-response">Spill response</option>
+          </select>
+        </div>
+        <ul class="points-list" id="sup-points"></ul>
+      </section>
+
+      <section class="ledger" aria-labelledby="sup-transcripts-heading">
+        <p class="ledger-count" aria-hidden="true">Ledger 02</p>
+        <h3 id="sup-transcripts-heading">Conversation, turn by turn</h3>
+        <div class="turn-grid">
+          <article class="turn-card">
+            <p class="turn-tag">Turn 1 · Original answer</p>
+            <div class="field">
+              <label class="box-label">Trainee answer — as heard by the machine</label>
+              <p class="heard-box" id="sup-original-stt"></p>
+            </div>
+            <div class="field">
+              <label class="box-label">Trainee answer — trainee correction (kept separate)</label>
+              <p class="correct-box" id="sup-original-edited"></p>
+            </div>
+          </article>
+          <article class="turn-card">
+            <p class="turn-tag">Turn 2 · Follow-up</p>
+            <div class="field">
+              <label class="box-label">Follow-up question asked</label>
+              <p class="heard-box" id="sup-followup-q"></p>
+            </div>
+            <div class="field">
+              <label class="box-label">Follow-up answer — as heard by the machine</label>
+              <p class="heard-box" id="sup-followup-stt"></p>
+            </div>
+            <div class="field">
+              <label class="box-label">Follow-up answer — trainee correction (kept separate)</label>
+              <p class="correct-box" id="sup-followup-edited"></p>
+            </div>
+          </article>
+        </div>
+        <p class="notice notice-tts" id="sup-stop-notice" role="status" hidden></p>
+      </section>
+
+      <section class="ledger" aria-labelledby="sup-result-heading">
+        <p class="ledger-count" aria-hidden="true">Ledger 03</p>
+        <h3 id="sup-result-heading">Machine reading <span class="turn-note">(neutral — for your judgement)</span></h3>
+        <p class="notice" id="sup-eval-note">No evaluation yet. Results appear here after the trainee submits an answer.</p>
+        <div id="sup-machine"></div>
+        <div class="button-row">
+          <button type="button" class="btn" id="btn-sup-evaluate">Re-run evaluation on corrected answers</button>
+        </div>
+        <p class="notice notice-tts" id="sup-eval-notice" role="status" hidden></p>
+      </section>
+
+      <section class="ledger" aria-labelledby="sup-override-heading">
+        <p class="ledger-count" aria-hidden="true">Ledger 04</p>
+        <h3 id="sup-override-heading">Your decision <span class="turn-note">(kept alongside the machine reading)</span></h3>
+        <div id="sup-overrides"></div>
+      </section>
+
+      <section class="ledger" aria-labelledby="sup-signoff-heading">
+        <p class="ledger-count" aria-hidden="true">Ledger 05</p>
+        <h3 id="sup-signoff-heading">Final sign-off <span class="turn-note">(saved with the session)</span></h3>
+        <div class="field">
+          <label class="box-label" for="sup-sign-name">Supervisor name</label>
+          <input type="text" id="sup-sign-name" placeholder="Your name, saved with the sign-off" autocomplete="name" />
+        </div>
+        <div class="field field-inline">
+          <label for="sup-sign-decision">Final decision</label>
+          <select id="sup-sign-decision">
+            <option value="needs-practice">Needs more practice</option>
+            <option value="approved">Satisfactory — practice complete</option>
+            <option value="not-ready">Not satisfactory — repeat session</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="box-label" for="sup-sign-note">Sign-off note (optional, saved with the session)</label>
+          <input type="text" id="sup-sign-note" placeholder="Optional note for the trainee record" />
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn btn-primary" id="btn-signoff">Sign off this session</button>
+        </div>
+        <p class="notice notice-tts" id="sup-sign-status" role="status" hidden></p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="coach-footer">
+    <p>Samajh demo · synthetic data only · made for practice, never for certification. Speech services are provided by the Gnani proxy when configured; live speech status is shown in the ribbon above.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

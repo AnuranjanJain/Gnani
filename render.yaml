@@ -1,0 +1,27 @@
+# Samajh — Render blueprint (Docker-based web service).
+# Deploy: push this repo, then Render Dashboard → New → Blueprint → pick the repo.
+services:
+  - type: web
+    name: samajh
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    # Sessions are JSON files under ./data (see README "Session persistence").
+    # Render's filesystem is ephemeral: WITHOUT this disk, every deploy/restart
+    # wipes all saved sessions. The disk persists /app/data across restarts.
+    disk:
+      name: samajh-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      # Required for speech; empty = honest 503s + text fallback. Set as a
+      # secret in the Render dashboard (never commit a real key).
+      - key: GNANI_API_KEY
+        sync: false
+      # Optional model overrides (defaults match .env.example).
+      - key: GNANI_STT_MODEL
+        value: prisma-v3.0
+      - key: GNANI_STT_LANGUAGE
+        value: hi-IN,en-IN
+      - key: GNANI_TTS_MODEL
+        value: timbre-v2.5
