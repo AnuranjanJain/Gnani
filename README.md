@@ -1,278 +1,145 @@
-# Samajh — Safety-Instruction Training Demo
+<div align="center">
 
-Samajh is a small demo that helps a trainee practise repeating back a safety
-instruction in their own words. It offers three synthetic practice scenarios
-(pick one in either view; both stay in sync):
+# Samajh
 
-1. **Machine cleaning** — `Before cleaning, switch off the machine and lock
-   the power supply.` (the original approved scenario)
-2. **Ladder safety** — `Before climbing, set the ladder on firm level ground
-   and lock the spreader bars.`
-3. **Spill response** — `If cleaning liquid spills, step back from the spill
-   and tell the supervisor.`
+### Did the instruction land? Let's hear it back.
 
-The trainee listens to the instruction, records an answer, and gets a neutral,
-machine-generated check of two required points plus at most one teach-back
-follow-up question. A supervisor view shows the transcripts, the machine
-result with supporting excerpts, and supervisor overrides kept alongside the
-machine result.
+**A voice-enabled teach-back prototype for workplace safety training.**
 
-Synthetic demo data only. Nothing here is training material until a human
-supervisor reviews it.
+[![Watch the demo](https://img.shields.io/badge/Watch%20the%20demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/V83c7kDkG3k)
+[![Try the preview](https://img.shields.io/badge/Try%20the%20preview-Text%20only-FFC53D?style=for-the-badge)](https://samajh-text-preview.vercel.app/)
+[![Built with Gnani AI](https://img.shields.io/badge/Speech%20by-Gnani%20AI-14532D?style=for-the-badge)](https://www.gnani.ai/)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
-## Setup
+Built for the **Great Indian AI Internship Challenge**.
 
-Requirements: Node.js 18+ (tested on Node 24), no other dependencies.
+[Try the live preview](https://samajh-text-preview.vercel.app/) · [Watch the walkthrough](https://youtu.be/V83c7kDkG3k) · [Run locally](#get-started) · [Developer guide](docs/developer-guide.md)
 
-```powershell
+</div>
+
+---
+
+> **Prototype, not a safety certification system.** Samajh uses fictional scenarios and demonstration data. Its machine checks can be wrong, its Hindi translations require human review, and a qualified supervisor remains responsible for decisions. Do not use it as a substitute for workplace safety training or procedures.
+
+## The idea
+
+Someone can hear an instruction, say “yes,” and still miss a critical detail. Samajh turns that moment into a conversation: the trainee explains an instruction in their own words, the app highlights which predefined points appear in the answer, and a supervisor reviews the evidence.
+
+**Listen → say it back → clarify → review together.**
+
+![Samajh trainee view showing the machine-cleaning scenario](docs/images/trainee.png)
+
+## See it in action
+
+**[Try the live text-only preview →](https://samajh-text-preview.vercel.app/)**
+Use fictional answers. Speech is disabled, and sessions are temporary and may not persist. The preview is not a service for real training records.
+
+[![Watch the Samajh product demo on YouTube](https://img.youtube.com/vi/V83c7kDkG3k/hqdefault.jpg)](https://youtu.be/V83c7kDkG3k)
+
+The video includes a synthetic spoken exchange through Gnani's speech services, followed by a tour of the trainee and supervisor views.
+
+## How it works
+
+1. **Choose a scenario.** A trainee selects machine cleaning, ladder safety, or spill response and reads or plays the instruction.
+2. **Say it back.** The browser records an answer. Gnani **Prisma** transcribes the speech; the trainee can correct the result before submitting it.
+3. **Find the missing piece.** A local rule-based evaluator checks the answer against two predefined points and may ask one focused follow-up.
+4. **Keep a human in the loop.** The supervisor sees the conversation, machine findings, and supporting excerpts, and can add an override, note, and sign-off.
+
+<table>
+  <tr>
+    <td width="50%"><strong>A follow-up, not a guess</strong><br><img src="docs/images/follow-up.png" alt="Samajh asks a follow-up about the missing power-supply step"></td>
+    <td width="50%"><strong>Evidence for the supervisor</strong><br><img src="docs/images/supervisor.png" alt="Supervisor review with machine findings, supporting excerpts, and override controls"></td>
+  </tr>
+</table>
+
+### A small example
+
+> **Instruction:** “Before cleaning, switch off the machine and lock the power supply.”
+>
+> **Trainee:** “Machine band karke saaf karna hai.”
+>
+> **Samajh:** The machine step was mentioned; the power-supply step was not. It asks what should happen with the power supply.
+
+The follow-up gives the trainee a chance to add the missing point. The supervisor can still review or override the machine result.
+
+## What powers Samajh
+
+| Piece | Role |
+| --- | --- |
+| **Gnani Prisma v3.0** | Speech-to-text for recorded answers. |
+| **Gnani Timbre v2.5** | Text-to-speech for instructions and follow-up questions when the account has access. |
+| **Local evaluator** | Deterministic keyword and paraphrase rules for the three predefined scenarios. It is not Evon or a general-purpose reasoning model. |
+| **Node.js + Express** | Serves the app, proxies Gnani requests, evaluates answers, and stores demo sessions. |
+| **Vanilla HTML, CSS, and JavaScript** | Trainee and supervisor interfaces, microphone recording, and transcript correction. |
+
+API keys stay on the server. When speech is unavailable, the app shows an error or text fallback instead of pretending a call succeeded.
+
+## Get started
+
+**You need Node.js 18 or newer** and npm. A Gnani API key is needed for speech; without one you can still explore the text flow.
+
+```bash
+git clone https://github.com/AnuranjanJain/Gnani.git
+cd Gnani
 npm install
-npm test     # 126 tests, must all pass
-npm start    # serves http://localhost:3000 (PORT=3001 npm start if 3000 is taken)
 ```
 
-Copy `.env.example` to `.env` to configure speech services (optional):
+Copy `.env.example` to `.env`, then add your Gnani API key locally. Do not commit the key.
 
-```powershell
+```bash
+# macOS / Linux
+cp .env.example .env
+
+# Windows PowerShell
 Copy-Item .env.example .env
 ```
 
-## Environment variables
-
-| Variable           | Default        | Meaning                                              |
-| ------------------ | -------------- | ---------------------------------------------------- |
-| `GNANI_API_KEY`    | _(empty)_      | Gnani API key. Empty = speech unavailable, honest 503s and text fallback. |
-| `GNANI_STT_MODEL`  | `prisma-v3.0`  | STT model sent to Gnani.                             |
-| `GNANI_STT_LANGUAGE` | `hi-IN,en-IN` | STT language codes sent to Gnani.                   |
-| `GNANI_TTS_MODEL`  | `timbre-v2.5`  | TTS model sent to Gnani.                             |
-| `PORT`             | `3000`         | Local server port.                                   |
-
-Keys are read from the environment (or `.env`, which is git-ignored) only.
-Never put keys in code, logs, or this README.
-
-## Gnani usage (as implemented in `server.js`)
-
-Base URL: `https://api.vachana.ai`. Auth header: `X-API-Key-ID`.
-
-- Speech-to-text: `POST /stt/v3`, multipart form with `audio_file` (raw
-  `audio/*` bytes, <=30s), `model` (`GNANI_STT_MODEL`), `language_code`
-  (`GNANI_STT_LANGUAGE`).
-- Text-to-speech: `POST /api/v1/tts/inference`, JSON
-  `{ text, voice, model, language, audio_config: { container: "wav" } }`.
-  Voices: `Nalini` for `hi-IN`, `Kaveri` for `en-IN`, `Poorvi` for `hi-en`
-  (Hinglish — used for the Latin-script demo Hindi line).
-
-Live Gnani STT/TTS calls are **VERIFIED** with a configured key (2026-11-08:
-TTS `timbre-v2.5`/`Nalini` synthesis → STT `prisma-v3.0` round-trip returned
-`सफाई से पहले machine band करें और power supply lock करें।`,
-`detected_language_code=hi-IN`, both points Mentioned). Without
-`GNANI_API_KEY` the server returns honest `STT_UNAVAILABLE` /
-`TTS_UNAVAILABLE` (503) errors and the page falls back to text. A Gnani
-`SCOPE_NOT_ALLOWED` (403) response is likewise mapped to `TTS_UNAVAILABLE`.
-
-## Capability-verification steps
-
-1. `npm test` — 126/126 green. Covers the evaluator (states, exact excerpts,
-   teach-back follow-ups, demo utterances, paraphrases and code-mix,
-   Devanagari transliterations, the बैंड-lookalike guard, empty/unintelligible
-   input, contradictions) for all three scenarios plus the registry
-   (wording, Hindi-review flags, default compatibility), the server contracts
-   and Gnani error-shape mapping (mocked upstream only — no live calls),
-   live-status tracking (VERIFIED only after a real upstream success), the
-   frontend contract (override preservation, empty-never-evaluated, single
-   follow-up, scenario mirror, picker sync, no secrets), the WAV encoder
-   bytes, and file-based session persistence (store round-trip,
-   reload-restore shape, per-scenario sessions, corrupt-file errors, HTTP
-   create/append/sign-off on an ephemeral port).
-2. `npm start`, then check the service status (config only, never calls Gnani):
-
-   ```powershell
-   Invoke-RestMethod http://127.0.0.1:3000/api/health
-   # ok=true, keyConfigured=false without a key, liveGnaniCalls=UNVERIFIED
-   ```
-
-3. Open `http://localhost:3000/` — the Samajh page loads with a service-status
-   banner and Trainee / Supervisor tabs.
-4. Evaluate the two demo utterances:
-
-   ```powershell
-   $demo1 = @{ transcript = "Machine band karke saaf karna hai."; turn = 1 } | ConvertTo-Json
-   Invoke-RestMethod http://127.0.0.1:3000/api/evaluate -Method POST -ContentType "application/json" -Body $demo1
-   # switch-off=Mentioned, lock-power=Not mentioned, power-supply follow-up, Needs clarification
-
-   $demo2 = @{ transcript = "Power supply lock karni hai."; turn = 1 } | ConvertTo-Json
-   Invoke-RestMethod http://127.0.0.1:3000/api/evaluate -Method POST -ContentType "application/json" -Body $demo2
-   # lock-power=Mentioned, switch-off=Not mentioned, machine follow-up, Needs clarification
-   ```
-
-5. Without a key, confirm the honest speech fallbacks: `POST /api/tts` and
-   `POST /api/stt` return 503 `TTS_UNAVAILABLE` / `STT_UNAVAILABLE`.
-
-## Reproducible demo script
-
-1. `npm install; npm start`, open `http://localhost:3000/`.
-2. Trainee view: pick a language and press **Play instruction**. (Without a
-   key you get a text-only notice — read the instruction aloud instead.)
-3. Answer one: press **Record**, say **"Machine band karke saaf karna hai."**
-   (or type it in the corrections box), then **Submit answer for review**.
-   Expected: switch-off Mentioned with that sentence as the excerpt,
-   lock-power Not mentioned, one follow-up asking in your own words what needs
-   to happen with the power supply.
-4. Follow-up answer: press **Record follow-up answer**, say
-   **"Power supply lock karni hai."**, then **Submit follow-up answer**.
-   Expected: combined result Mentioned/Mentioned,
-   state `Ready for supervisor review`, no further follow-up.
-5. Supervisor view: check the approved instruction, both transcripts (automatic
-   vs corrected, kept separate), per-point results with exact excerpts or
-   `no supporting excerpt`, and the neutral overall state. Try a per-point
-   override + note: the machine result stays visible and the Final line reads
-   e.g. `Mentioned (supervisor override; machine said Unclear)`.
-6. Optional: submit an empty answer or a contradiction such as
-   `Switch off the machine. Actually, do not switch off.` — empty input is
-   never evaluated, and contradictions are never Mentioned.
-
-## API reference (local server)
-
-- `GET /api/health` → `{ ok, gnani: {...}, liveGnaniCalls, lastLiveStt, lastLiveTts }`.
-  `liveGnaniCalls` is `VERIFIED` only after a real upstream success this
-  session (never on config alone); timestamps show the last live STT/TTS.
-- `POST /api/stt` — raw `audio/*` bytes (query `?filename=` optional) → Gnani
-  transcript JSON; `{ transcript: "" }` is success, not an error.
-- `POST /api/tts` — `{ text, language }` (`hi-IN` default, `en-IN` also
-  accepted) → WAV audio bytes, or 503 `TTS_UNAVAILABLE`.
-- `POST /api/evaluate` — `{ transcript, turn, scenarioId? }` →
-  `{ points: [{ id, label, status, excerpt }], followUp, state, turn, scenarioId }`.
-  `scenarioId` is optional (default `machine-cleaning`); unknown ids get
-  `400 BAD_SCENARIO`. Statuses: `Mentioned` / `Not mentioned` / `Unclear`.
-  States: `Ready for supervisor review` / `Needs clarification`.
-- `POST /api/sessions` creates a session (`201` + full session object).
-  Optional query `?scenarioId=` picks the practice scenario (default
-  `machine-cleaning`); unknown ids get `400 SESSION_BAD_SCENARIO`.
-- `GET /api/sessions/:id` resumes one session (unknown id: `404
-  SESSION_NOT_FOUND`; unreadable file: `500 SESSION_CORRUPT`).
-- `PATCH /api/sessions/:id` with `{ turn?, eval?, overrides? }` appends a
-  turn (`{ turn, stt, edited }`), an eval snapshot, and/or per-point overrides.
-- `POST /api/sessions/:id/turns` appends one turn (alias for `PATCH`).
-- `POST /api/sessions/:id/signoff` with `{ decision, supervisorName, note? }`
-  records the final sign-off (`decision`: `approved` / `needs-practice` /
-  `not-ready`) and marks the session finished.
-
-## Practice scenarios
-
-Three synthetic scenarios live in `lib/scenarios.js` (each: an approved EN
-instruction, a demo Hindi line flagged `needs-human-review`, and two required
-points with teach-back follow-ups). `lib/evaluate.js` scores any of them from
-the per-point match patterns in the registry; `evaluate(transcript, turn)`
-with no scenario arg still scores machine-cleaning exactly as before, and
-`lib/scenario.js` keeps exporting that default scenario unchanged.
-
-The page has one picker in the trainee view and one in the supervisor ledger;
-both stay in sync. Switching scenarios starts a fresh turn set (with a
-confirm step when answers already exist) in a fresh session — the previous
-session stays saved on disk. The picker locks once the session is signed off.
-
-## Session persistence
-
-Progress auto-saves to file-based sessions: each session is one JSON file at
-`data/sessions/<id>.json` (created at runtime; `data/` is git-ignored and
-holds synthetic demo data only — never commit it, never put real trainee
-records there). A session file holds its `scenarioId`, turns (`stt` + trainee
-`edited` kept separate), eval snapshots, per-point overrides with notes, and
-the final sign-off (`{ decision, supervisorName, note, at }`). Sessions saved
-before scenarios existed resume as machine-cleaning.
-
-The page stores its session id in `localStorage` and restores on reload with
-a resume banner ("Resumed your saved session…", plus **Start fresh** to begin
-a new one). The supervisor view has a final sign-off panel (name + decision +
-optional note); once signed off, the sign-off line with its timestamp persists
-across reloads and the trainee view locks its answers read-only for review.
-
-Set `SAMAJH_DATA_DIR` to point the store at another directory (tests use a
-temp dir).
-
-## Deploy
-
-The app is a single Node process (`npm start` → `node server.js`) that reads
-`PORT` from the environment and answers `GET /api/health` for health checks.
-Use Node 24 (see `.nvmrc`; `package.json` engines require Node 18+).
-
-### Required environment variables
-
-| Variable             | Required?       | Meaning                                                        |
-| -------------------- | --------------- | -------------------------------------------------------------- |
-| `GNANI_API_KEY`      | Yes, for speech | Gnani API key. Empty = honest 503s + text fallback. Set as a secret in the host dashboard. |
-| `GNANI_STT_MODEL`    | No              | STT model override (default `prisma-v3.0`).                    |
-| `GNANI_STT_LANGUAGE` | No              | STT language override (default `hi-IN,en-IN`).                 |
-| `GNANI_TTS_MODEL`    | No              | TTS model override (default `timbre-v2.5`).                    |
-| `PORT`               | Set by the host | Render/Railway inject this; default `3000` locally.            |
-| `SAMAJH_DATA_DIR`    | No              | Session store dir (default `./data`).                          |
-
-Never commit real keys: `.env` is git-ignored and stays local; production
-keys live only in the host's secret settings.
-
-### Ephemeral-disk warning (read before deploying)
-
-Sessions are plain JSON files under `data/sessions/` (see "Session
-persistence" above). Host filesystems are **ephemeral by default**: every
-redeploy or restart wipes all saved sessions unless persistent storage is
-attached. Render: the disk in `render.yaml` (mounted at `/app/data`) handles
-this. Railway: attach a volume at `/app/data` (or set `SAMAJH_DATA_DIR` to
-your mount path). Docker: pass `-v <volume>:/app/data` as below.
-
-### Render
-
-1. Push this repo, then Dashboard → New → Blueprint → select the repo.
-   `render.yaml` defines the `samajh` web service (Docker runtime,
-   `healthCheckPath: /api/health`, 1 GB disk at `/app/data`).
-2. When prompted, set `GNANI_API_KEY` as a secret value (`sync: false` vars
-   are never stored in the repo). Optional: the three model overrides.
-3. Deploy and open the service URL. Free tier: the service sleeps after
-   ~15 minutes without traffic; the first request after sleep takes ~30–60s
-   to wake it, then behaves normally.
-
-### Railway
-
-No config file needed — configure in the dashboard:
-
-1. New → Deploy from Repo → select this repo.
-2. Settings → Start Command: `npm start`. Healthcheck Path: `/api/health`.
-3. Variables: add `GNANI_API_KEY` (plus optional model overrides).
-   Railway injects `PORT` automatically.
-4. Storage → Add Volume, mount path `/app/data`, so sessions survive
-   restarts (or set `SAMAJH_DATA_DIR` to your mount path instead).
-5. Trial/free usage sleeps or stops when idle or over quota; expect a slow
-   first request after a cold start.
-
-### Docker
-
-```powershell
-docker build -t samajh .
-docker run -p 3000:3000 -e GNANI_API_KEY=$env:GNANI_API_KEY -v samajh-data:/app/data samajh
+```bash
+npm test
+npm start
 ```
 
-Omit `-v …` only for a throwaway run — sessions are lost when the container
-is removed. Nothing here deploys on its own: this repo ships the Dockerfile
-and `render.yaml`, but publishing to a host is always a manual step.
+Open **http://localhost:3000**. Browser microphone access requires a secure context such as localhost or HTTPS.
 
-## Known limitations
+### Configuration
 
-- Browser microphone only (MediaRecorder, auto-stop at 30s, 15MB cap).
-  No telephony: this demo cannot place or receive calls.
-- Local file sessions only: transcripts, results, overrides, and the
-  sign-off persist as JSON under `data/` (git-ignored, synthetic demo data
-  only) and resume on reload. No accounts, no multi-device sync.
-- The Hindi instruction lines (one per scenario, e.g.
-  `Safai se pehle machine band karein aur power supply lock karein.`)
-  are demo placeholders flagged `needs-human-review`; do not use them for
-  real training until a fluent reviewer approves each one.
-- Live Gnani integration requires an API key; without one, speech paths are
-  covered by contract tests with a mocked upstream, not by real calls.
-  Recognition is imperfect — e.g. one live round-trip heard "band karke" as
-  "बैन कार के", correctly scored Not mentioned with a follow-up rather than
-  a guessed match. Trainee corrections exist for exactly this reason.
-  Related: Latin-script "band" is ambiguous for TTS and has rendered as
-  "बैंड" (a strip/group — not "off"), via both `hi-IN`/`Nalini` and
-  `hi-en`/`Poorvi`; the reviewed Devanagari text (बंद) round-trips
-  correctly. The matcher deliberately does not treat बैंड as बंद.
-- The evaluator is a local keyword/paraphrase heuristic (English +
-  Devanagari + Latin-script Hindi, negation-aware). It can misread unusual
-  phrasings — the supervisor's judgement is the actual decision.
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `GNANI_API_KEY` | Empty | Enables authenticated Gnani speech requests. Keep it secret. |
+| `GNANI_STT_MODEL` | `prisma-v3.0` | Speech-to-text model. |
+| `GNANI_STT_LANGUAGE` | `hi-IN,en-IN` | Languages sent to speech-to-text. |
+| `GNANI_TTS_MODEL` | `timbre-v2.5` | Text-to-speech model. |
+| `PORT` | `3000` | HTTP server port. |
+| `SAMAJH_DATA_DIR` | `./data` | Directory for file-based demo sessions. |
+
+## Project map
+
+```text
+public/           Trainee and supervisor interface
+lib/scenarios.js  Three fictional scenarios and required points
+lib/evaluate.js   Rule-based teach-back evaluation
+lib/session-store.js  File-based session persistence
+server.js         Express server and Gnani API proxies
+test/             Evaluator, API, session, and frontend tests
+docs/             Screenshots and detailed developer guide
+```
+
+## Current boundaries
+
+- **Human review is essential.** The evaluator can misinterpret language, miss paraphrases, or misunderstand speech recognition errors. A “mentioned” result is not proof of comprehension.
+- **Translations are demonstration placeholders.** The Hindi lines need review by a qualified speaker before any real training use.
+- **Browser audio only.** There is no telephone integration; recording is limited to 30 seconds.
+- **Local demo storage.** Sessions are stored as JSON files. There are no accounts or multi-device synchronization, and ephemeral hosting can erase data without persistent storage. Use synthetic data only.
+- **Public-hosting precautions.** The app currently has no authentication or rate limits. Do not expose a configured speech API key through a public deployment without appropriate access controls and usage limits.
+
+For API routes, session behavior, deployment configuration, and verification details, see the [developer guide](docs/developer-guide.md).
+
+---
+
+<div align="center">
+
+**A missed step can become a better conversation.**
+
+[Watch Samajh in action](https://youtu.be/V83c7kDkG3k)
+
+</div>
